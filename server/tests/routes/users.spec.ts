@@ -29,8 +29,6 @@ describe('user routes', () => {
 
         const user = res.body as Partial<User>
 
-        console.log('res', user)
-
         expect(res.status).toEqual(200)
         expect(user.username).toBeDefined()
         expect(user.username).toEqual('newUser')
@@ -46,10 +44,20 @@ describe('user routes', () => {
                 password: 'password'
             })
 
-        const data = res.body
-        // console.log(data)
-
         expect(res.status).toEqual(200)
+
+        const {message, token, user} = res.body
+        expect(message).toBeDefined()
+        expect(token).toBeDefined()
+        expect(user).toBeDefined()
+        expect(message).toEqual('success')
+
+        const {id, username, email} = user
+        expect(id).toBeDefined()
+        expect(username).toBeDefined()
+        expect(email).toBeDefined()
+        expect(username).toEqual('newUser')
+        expect(email).toEqual('newuser@gmail.com')
     })
 
     test('register: newUser (must be an error', async() => {

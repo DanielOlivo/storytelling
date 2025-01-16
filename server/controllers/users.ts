@@ -1,4 +1,5 @@
 import {Request, Response} from 'express'
+import jwt from 'jsonwebtoken'
 import {User} from '../../shared/src/Types'
 import { hash, compare } from 'bcrypt'
 import users from '../models/users'
@@ -49,7 +50,23 @@ const userController = {
             return
         }
 
-        res.sendStatus(200)
+        const accessToken = jwt.sign(
+            {id: existing.id, username: existing.username, email: existing.email},
+            process.env.JWT_SECRET as string,
+            {expiresIn: '7d'}
+        )
+
+        res.cookie('token', accessToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+            httpOnly: true
+        })
+
+        // res.sendStatus(200)
+        res.status(200).json({
+            message: 'success',
+            user: {id: existing.id, username: existing.username, email: existing.email},
+            token: accessToken
+        })
     }
 }
 

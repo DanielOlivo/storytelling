@@ -47,7 +47,7 @@ const model: UsersModel = {
     async getByUsername(username) {
         const user = await db('users')
             .where('username', username)
-            .select('id', 'username', 'hashed')
+            .select('id', 'username', 'hashed', 'email')
             .first() as User
         return user;
     },
