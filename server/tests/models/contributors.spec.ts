@@ -47,6 +47,18 @@ describe('contributors model', () => {
         expect(all.length).toEqual(1)
     })
 
+    test("get: john", async () => {
+        const contributor = await contributors.get(johnId, storyId)
+        expect(contributor).toBeDefined()
+        expect(contributor.userId).toEqual(johnId)
+        expect(contributor.storyId).toEqual(storyId)
+    })
+
+    test('get: not exist', async() => {
+        const contributor = await contributors.get(100, 100)
+        expect(contributor).toBeUndefined()
+    })
+
     test('create: jane', async () => {
         const contributor = await contributors.add(janeId, storyId)
         expect(contributor.userId).toEqual(janeId)

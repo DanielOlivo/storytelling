@@ -1,16 +1,13 @@
 import {Request, Response} from 'express'
 import jwt from 'jsonwebtoken'
-import {User} from '../../shared/src/Types'
+import {Credentials, LoginCredentials, User} from '../../shared/src/Types'
 import { hash, compare } from 'bcrypt'
 import users from '../models/users'
 
-export interface UserController {
-
-}
 
 const userController = {
     register: async (req: Request, res: Response) => {
-        const credentials = req.body as Partial<User> 
+        const credentials = req.body as Credentials
 
         const existing = await users.getByUsername(credentials.username!)
         if(existing){
@@ -19,7 +16,7 @@ const userController = {
         } 
 
         const saltRouds = 10 
-        const hashed = await hash(credentials.hashed!, saltRouds)
+        const hashed = await hash(credentials.password!, saltRouds)
 
         const newUser = await users.create(
             credentials.username!,
@@ -27,14 +24,13 @@ const userController = {
             hashed
         )
 
-        // hashed remained only on server
         const {hashed: h, ...resObj} : User = newUser
         
         res.status(200).json(resObj)
     },
 
     login: async (req: Request, res: Response) => {
-        const {username, password} = req.body
+        const {username, password} = req.body as LoginCredentials
 
         const existing = await users.getByUsername(username)
 

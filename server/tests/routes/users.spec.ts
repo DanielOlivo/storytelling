@@ -5,7 +5,7 @@ import {describe, test, expect, beforeEach, beforeAll, afterAll} from '@jest/glo
 
 import app from '../../app'
 import db from '../../config/db'
-import { User } from '../../../shared/src/Types'
+import { Credentials, User } from '../../../shared/src/Types'
 
 describe('user routes', () => {
 
@@ -20,12 +20,14 @@ describe('user routes', () => {
     })
 
     test('register: newUser', async() => {
-        const res = await request(app).post("/api/users/register")
-            .send({
+        const credentials = {
                 username: 'newUser',
-                hashed: 'password',
+                password: 'password',
                 email: 'newuser@gmail.com'
-            })
+        } as Credentials
+
+        const res = await request(app).post("/api/users/register")
+            .send(credentials)
 
         const user = res.body as Partial<User>
 
@@ -35,6 +37,19 @@ describe('user routes', () => {
         expect(user.id).toBeDefined()
         expect(user.email).toBeDefined()
         expect(user.email).toEqual('newuser@gmail.com')
+    })
+
+    test('registration with invalid email', async () => {
+        const credentials = {
+                username: 'newUser',
+                password: 'password',
+                email: 'newuser_gmail.com'
+        } as Credentials
+
+        const res = await request(app).post("/api/users/register")
+            .send(credentials)
+
+        expect(res.status).toEqual(400)
     })
 
     test('login: newUser', async() => {
@@ -61,12 +76,14 @@ describe('user routes', () => {
     })
 
     test('register: newUser (must be an error', async() => {
+        const credentials = {
+            username: 'newUser',
+            password: 'password',
+            email: 'newuser@gmail.com'
+        } as Credentials
+
         const res = await request(app).post("/api/users/register")
-            .send({
-                username: 'newUser',
-                hashed: 'password',
-                email: 'newuser@gmail.com'
-            })
+            .send(credentials)
 
         expect(res.status).toEqual(400)
         expect(res.body.message).toBeDefined()

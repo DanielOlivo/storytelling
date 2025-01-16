@@ -6,6 +6,7 @@ export interface ContributorsModel {
     remove: (userId: UserId, storyId: StoryId) => Promise<ContributorId>
     removeById: (id: ContributorId) => Promise<ContributorId>
 
+    get: (userId: UserId, storyId: StoryId) => Promise<Contributor>
     getAll: () => Promise<Contributor[]>
 }
 
@@ -28,6 +29,14 @@ const model: ContributorsModel = {
             .where('id', contrId)
             .del(['id']) as Partial<Contributor>[]
         return id as ContributorId
+    },
+
+    async get(userId, storyId) {
+        const contributor = await db('contributors')
+            .where('userId', userId)
+            .andWhere('storyId', storyId)
+            .first() as Contributor
+        return contributor
     },
 
     async getAll() {

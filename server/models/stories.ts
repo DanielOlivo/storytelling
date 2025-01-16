@@ -6,6 +6,7 @@ export interface PostModel {
     remove: (id: StoryId) => Promise<StoryId>
 
     edit: (upd: Story) => Promise<Story>
+    // editTitleContent: (title: string, content: string) => Promise<Story>
 
     getAll: () => Promise<Story[]>
     getById: (id: StoryId) => Promise<Story>
@@ -31,6 +32,13 @@ const model: PostModel = {
         }, ['id', 'title', 'content', 'created', 'updated']) as Story[]
         return updated
     },
+    // async editTitleContent(id, title, content) {
+    //     const [updated] = await db('stories').where('id', upd.id).update({
+    //         title: title,
+    //         content: content
+    //     }, ['id', 'title', 'content', 'created', 'updated']) as Story[]
+    //     return updated
+    // },
     async getAll(){
         const stories = await db('stories')
             .select('id', 'title', 'content', 'created', 'updated') as Story[]

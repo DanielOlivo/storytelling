@@ -38,6 +38,40 @@ export interface Comment {
     content: string
 }
 
+export interface Credentials {
+    username: string
+    password: string
+    email: string
+}
+
+export interface LoginCredentials {
+    username: string
+    password: string
+}
+
+export interface StoryUpdate {
+    creator: UserId
+    title: string 
+    content: string
+}
+
+export interface StoryEdit {
+    actorId: UserId
+    story: Story
+}
+
+export interface StoryDelete {
+    storyId: StoryId
+    actorId: UserId
+}
+
+export interface CollabAction {
+    // action: CollaborationAction
+    actorId: UserId
+    userId: UserId
+    storyId: StoryId
+}
+
 /**
 CREATE TABLE Users (
 id SERIAL PRIMARY KEY,
