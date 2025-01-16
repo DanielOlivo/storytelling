@@ -20,7 +20,7 @@ export interface Story {
     title: string
     content: string
 
-    created: Date
+    created?: Date
     edited?: Date
 }
 
@@ -66,7 +66,6 @@ export interface StoryDelete {
 }
 
 export interface CollabAction {
-    // action: CollaborationAction
     actorId: UserId
     userId: UserId
     storyId: StoryId

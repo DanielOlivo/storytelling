@@ -5,6 +5,7 @@ import stories from '../models/stories'
 import contributors from '../models/contributors'
 
 const contributorController = {
+
     addCollaborator: async (req: Request, res: Response) => {
         const {actorId, userId, storyId} = req.body as CollabAction
         
@@ -23,10 +24,11 @@ const contributorController = {
         const contributor = await contributors.add(userId, storyId)
         res.status(200).json(contributor)
     },
+
     removeCollaborator: async (req: Request, res: Response) => {
         const {actorId, userId, storyId} = req.body as CollabAction
 
-        const userWithRight = await contributors.get(actorId, userId)
+        const userWithRight = await contributors.get(actorId, storyId)
         if(!userWithRight){
             res.sendStatus(403)
             return

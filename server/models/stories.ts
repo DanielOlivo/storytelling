@@ -1,7 +1,7 @@
 import db from '../config/db'
 import { User, UserId, Password, Story, StoryId} from '../../shared/src/Types'
 
-export interface PostModel {
+export interface StoriesModel {
     create: (title: string, content: string) => Promise<Story>
     remove: (id: StoryId) => Promise<StoryId>
 
@@ -14,7 +14,7 @@ export interface PostModel {
     searchByTitle: (title: string) => Promise<Story[]>
 }
 
-const model: PostModel = {
+const model: StoriesModel = {
     async create(title, content) {
         const [story] = await db('stories')
             .insert({title, content}, ['id', 'title', 'content', 'created', 'updated']) as Story[]

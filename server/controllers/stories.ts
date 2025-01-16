@@ -33,15 +33,19 @@ const storiesController = {
     remove: async (req: Request, res: Response) => {
         const {storyId, actorId} = req.body as StoryDelete
 
+        // console.log('storydelete', req.body)
         const contributor = await contributors.get(actorId, storyId)
+        // console.log('contributor', contributor)
         if(!contributor){
+            console.log('why error?')
             res.sendStatus(403)
             return
         }
 
         const id = await stories.remove(storyId) as StoryId
+        // console.log('id', id)
 
-        res.status(200).json({storyId}) 
+        res.status(200).json({id}) 
     },
 
     // addCollaborator: async (req: Request, res: Response) => {
