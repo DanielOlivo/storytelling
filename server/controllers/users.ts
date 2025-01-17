@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import jwt from 'jsonwebtoken'
-import {Credentials, LoginCredentials, User} from '../../shared/src/Types'
+import {Credentials, LoginCredentials, LoginResponse, User} from '../../shared/src/Types'
 import { hash, compare } from 'bcrypt'
 import users from '../models/users'
 
@@ -57,12 +57,13 @@ const userController = {
             httpOnly: true
         })
 
-        // res.sendStatus(200)
-        res.status(200).json({
+        const responsePayload = {
             message: 'success',
             user: {id: existing.id, username: existing.username, email: existing.email},
             token: accessToken
-        })
+        } as LoginResponse
+
+        res.status(200).json(responsePayload)
     }
 }
 

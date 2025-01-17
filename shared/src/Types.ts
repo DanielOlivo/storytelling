@@ -30,13 +30,13 @@ export interface Contributor {
     storyId: StoryId
 }
 
-export interface Comment {
-    id: CommentId
-    sender: UserId
-    post: StoryId
+// export interface Comment {
+//     id: CommentId
+//     sender: UserId
+//     post: StoryId
 
-    content: string
-}
+//     content: string
+// }
 
 export interface Credentials {
     username: string
@@ -49,26 +49,50 @@ export interface LoginCredentials {
     password: string
 }
 
+export interface LoginResponse {
+    message: string
+    user: {id: UserId, username: string, email: string}
+    token: string
+}
+
 export interface StoryUpdate {
-    creator: UserId
+    // creator: UserId
     title: string 
     content: string
 }
 
 export interface StoryEdit {
-    actorId: UserId
-    story: Story
+    // actorId: UserId
+    // story: Story
+    storyId: number
+    title: string 
+    content: string
 }
 
 export interface StoryDelete {
     storyId: StoryId
-    actorId: UserId
+    // actorId: UserId
 }
 
 export interface CollabAction {
-    actorId: UserId
+    // actorId: UserId
     userId: UserId
     storyId: StoryId
+}
+
+export interface AuthPayload {
+    id: UserId
+    username: string
+    email: string
+}
+
+export interface Comment {
+    id: CommentId,
+    storyId: StoryId
+    userId: UserId
+    content: string
+    created: Date
+    edited?: Date
 }
 
 /**

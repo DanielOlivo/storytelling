@@ -7,9 +7,9 @@ import contributors from '../models/contributors'
 const contributorController = {
 
     addCollaborator: async (req: Request, res: Response) => {
-        const {actorId, userId, storyId} = req.body as CollabAction
+        const {userId, storyId}: CollabAction = req.body
         
-        const userWithRight = await contributors.get(actorId, storyId)
+        const userWithRight = await contributors.get(req.user.id, storyId)
         if(!userWithRight){
             res.sendStatus(403)
             return
@@ -26,9 +26,9 @@ const contributorController = {
     },
 
     removeCollaborator: async (req: Request, res: Response) => {
-        const {actorId, userId, storyId} = req.body as CollabAction
+        const {userId, storyId}: CollabAction = req.body
 
-        const userWithRight = await contributors.get(actorId, storyId)
+        const userWithRight = await contributors.get(req.user.id, storyId)
         if(!userWithRight){
             res.sendStatus(403)
             return

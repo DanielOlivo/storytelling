@@ -5,7 +5,7 @@ import {describe, test, expect, beforeEach, beforeAll, afterAll} from '@jest/glo
 
 import app from '../../app'
 import db from '../../config/db'
-import { Contributor, Credentials, StoryUpdate, User, UserId, Story, StoryId, StoryEdit, CollabAction, StoryDelete } from '../../../shared/src/Types'
+import { Contributor, Credentials, LoginCredentials, StoryUpdate, User, UserId, Story, StoryId, StoryEdit, CollabAction, StoryDelete, AuthPayload, LoginResponse } from '../../../shared/src/Types'
 
 
 describe('stories routes', () => {
@@ -13,6 +13,7 @@ describe('stories routes', () => {
     let johnId: UserId 
     let janeId: UserId
     let storyId: StoryId
+    let token: string
 
     beforeAll(async () => {
         await db.migrate.rollback()
@@ -27,15 +28,34 @@ describe('stories routes', () => {
         await db.migrate.rollback()
     })
 
+    test('login...', async () => {
+        const credentials = {
+            username: 'john.doe',
+            password: 'pass'
+        } as LoginCredentials
+
+        const res = await request(app)
+            .post('/api/users/login')
+            .send(credentials)
+
+        expect(res.status).toEqual(200)
+
+        const payload = res.body as LoginResponse
+        expect(payload).toBeDefined()
+        expect(payload.message).toEqual('success') 
+        token = payload.token
+    }) 
+
     test('create', async() => {
-        const payload = {
-            creator: johnId,
+        const payload: StoryUpdate = {
+            // creator: johnId,
             title: 'title',
             content: 'content'
-        } as StoryUpdate
+        }
 
         const res = await request(app)
             .post("/api/stories")
+            .set('Cookie', ['token=' + token])
             .send(payload)
             
         expect(res.status).toEqual(200)
@@ -51,18 +71,28 @@ describe('stories routes', () => {
         storyId = story.id
     })
 
+    test('get all', async () => {
+        const res = await request(app)
+            .get("/api/stories")
+            .set("Cookie", ['token=' + token])
+
+        expect(res.status).toEqual(200)
+
+        const johnStories = res.body as Story[]
+        expect(johnStories).toBeDefined()
+        expect(johnStories.length).toEqual(1)
+    })
+
     test('edit', async() => {
-        const payload = {
-            actorId: 1,
-            story: {
-                id: storyId,
-                title: 'updated title',
-                content: 'updated content'           
-            }
-        } as StoryEdit
+        const payload: StoryEdit = {
+            storyId,
+            title: 'updated title',
+            content: 'updated content'           
+        } 
 
         const res = await request(app)
             .put("/api/stories")
+            .set("Cookie", ['token=' + token])
             .send(payload)
         
         expect(res.status).toEqual(200)
@@ -75,14 +105,14 @@ describe('stories routes', () => {
     })
 
     test('add contributor', async() => {
-        const payload = {
-            actorId: 1, // john
+        const payload: CollabAction = {
             userId: 2, // jane
             storyId
-        } as CollabAction
+        }
 
         const res = await request(app)
             .post("/api/contributors")
+            .set("Cookie", ['token=' + token])
             .send(payload)
 
         expect(res.status).toEqual(200)
@@ -93,24 +123,25 @@ describe('stories routes', () => {
     })
 
     test('remove contributor', async () => {
-        const payload = {
-            actorId: 1, // john
+        const payload: CollabAction = {
             userId: 2, // jane
             storyId
-        } as CollabAction
+        }
 
         const res = await request(app)
             .delete("/api/contributors")
+            .set("Cookie", ['token=' + token])
             .send(payload)
 
         expect(res.status).toEqual(200)
     })
 
-    test('remove', async() => {
-        const payload = {actorId: 1, storyId} as StoryDelete
+    test('remove story', async() => {
+        const payload: StoryDelete = {storyId}
 
         const res = await request(app)
             .delete("/api/stories")
+            .set('Cookie', ['token=' + token])
             .send(payload)
 
         expect(res.status).toEqual(200)

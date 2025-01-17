@@ -6,10 +6,12 @@ export interface StoriesModel {
     remove: (id: StoryId) => Promise<StoryId>
 
     edit: (upd: Story) => Promise<Story>
-    // editTitleContent: (title: string, content: string) => Promise<Story>
+    editTitleContent: (storyId: StoryId, title: string, content: string) => Promise<Story>
 
     getAll: () => Promise<Story[]>
     getById: (id: StoryId) => Promise<Story>
+
+    getByUserId: (id: UserId) => Promise<Story[]>
 
     searchByTitle: (title: string) => Promise<Story[]>
 }
@@ -32,13 +34,13 @@ const model: StoriesModel = {
         }, ['id', 'title', 'content', 'created', 'updated']) as Story[]
         return updated
     },
-    // async editTitleContent(id, title, content) {
-    //     const [updated] = await db('stories').where('id', upd.id).update({
-    //         title: title,
-    //         content: content
-    //     }, ['id', 'title', 'content', 'created', 'updated']) as Story[]
-    //     return updated
-    // },
+    async editTitleContent(id, title, content) {
+        const [updated] = await db('stories').where('id', id).update({
+            title: title,
+            content: content
+        }, ['id', 'title', 'content', 'created', 'updated']) as Story[]
+        return updated
+    },
     async getAll(){
         const stories = await db('stories')
             .select('id', 'title', 'content', 'created', 'updated') as Story[]
@@ -50,6 +52,13 @@ const model: StoriesModel = {
             .select('id', 'title', 'content', 'created', 'updated')
             .first() as Story
         return story
+    },
+    async getByUserId(id) {
+        const result = await db('contributors')
+            .join('stories', 'contributors.storyId', '=', 'stories.id')
+            .where('userId', id)
+            .select('stories.id', 'title', 'content', 'stories.created', 'stories.updated') as Story[]
+        return result
     },
     async searchByTitle(title) {
         const result = await db('stories')
