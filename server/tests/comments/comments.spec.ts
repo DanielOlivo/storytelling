@@ -1,10 +1,16 @@
 process.env.NODE_ENV = 'test'
 
 import {type AddressInfo} from "node:net"
+import request from 'supertest'
 import io, {httpServer} from '../../socketServer'
 import {describe, test, expect, beforeEach, beforeAll, afterAll} from '@jest/globals'
 import {io as ioc, Socket as ClientSocket} from 'socket.io-client'
 import { Server, type Socket as ServerSocket } from "socket.io";
+import jwt from 'jsonwebtoken'
+import db from '../../config/db'
+import app from '../../app'
+import { Comment, CommentPosted, CommentPostRequest, CommentRemoved, CommentRemoveRequest, StoryUpdate, type Story } from "../../../shared/src/Types"
+
 // import { createServer } from "node:http";
 
 
@@ -12,12 +18,42 @@ describe('socket: comments', () => {
 
     // let io: Server, serverSocket: ServerSocket, clientSocket: ClientSocket;
     let serverSocket: ServerSocket, clientSocket: ClientSocket;
+    let story: Story
+    let comment: Comment
 
     beforeAll(async () => {
+        await db.migrate.rollback()
+        await db.migrate.latest()
+        await db.seed.run()
+
+        const tokenPayload = {
+            id: 1,
+            username: 'john.doe',
+            email: 'john.doe@gmail.com'
+        }
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string)
+
+        const payload: StoryUpdate = {
+            title: 'some title',
+            content: 'some content'
+        }
+
+        const res = await request(app)
+            .post('/api/stories')
+            .set('Cookie', ['token=' + token])
+            .send(payload)
+
+        story = res.body.story
+
         httpServer.listen(() => {
             const port = (httpServer.address() as AddressInfo).port;
+            // const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string)
+            // console.log('token: ', token)
+
             // console.log('port', port)
-            clientSocket = ioc(`http://localhost:${port}`);
+            clientSocket = ioc(`http://localhost:${port}`, {
+                auth: {token}
+            });
             clientSocket.on("connect", () => {
                 // console.log('connected')
                 // console.log('connected', clientSocket.connected)
@@ -26,9 +62,11 @@ describe('socket: comments', () => {
         await wait(200)
     });
 
-    afterAll(() => {
+    afterAll(async () => {
         io.close();
         clientSocket.disconnect();
+
+        await db.migrate.rollback()
     });
 
 
@@ -39,49 +77,39 @@ describe('socket: comments', () => {
         })
     }
 
-    test('msg', async() => {
-        clientSocket.emit('msg', 'dude')
-        await wait(300)
-    })
-
-    test('CommentPostRequest -> Comment', async() => {
+    test('post comment', async() => {
         await waitWith(done => {
-            clientSocket.on('comment', comment => {
-                console.log('someone posted', comment)
+            clientSocket.on('comment_posted', (posted: CommentPosted)  => {
+                comment = posted.posted
+                expect(comment.storyId).toEqual(story.id)
+                expect(comment.content).toEqual('HEEEEY')
+                expect(comment.userId).toEqual(1)
                 done(null)
             })
         }, () => {
             const req = {
-                userId: 1,
-                storyId: 1,
+                storyId: story.id,
                 content: "HEEEEY"
-            }
+            } as CommentPostRequest
+
             clientSocket.emit('comment_post', req)
         })
     })
 
-    // test("should work", async () => {
-    //     await waitFor((done) => {
-    //         clientSocket.on('hello', arg => {
-    //             expect(arg).toEqual('world')
-    //             done(null)
-    //         })
-    //     }, () => {
-    //         serverSocket.emit('hello', 'world')
-    //     })
-    // });
+    test('remove comment', async() => {
+        await waitWith(done => {
+            clientSocket.on('comment_removed', (removed: CommentRemoved) => {
+                expect(removed.id).toEqual(comment.id)
+                done(null)
+            })
+        }, () => {
+            const req = {
+                id: comment.id
+            } as CommentRemoveRequest
+            clientSocket.emit('comment_remove', req)
+        })
+    }) 
 
-
-
-
-    // test('just send', async() => {
-    //     console.log('emitting...')
-    //     client.emit('msg', 'duudes') 
-    // })
-
-    test('sanity check', () => {
-        expect(1).toEqual(1)
-    })
 })
 
 function wait(ms: number): Promise<void>{

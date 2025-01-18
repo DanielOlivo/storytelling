@@ -100,7 +100,7 @@ export interface Comment {
 
 // comments
 export interface CommentPostRequest {
-    userId: UserId
+    // userId: UserId
     storyId: StoryId
     content: string
 }

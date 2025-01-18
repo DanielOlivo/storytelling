@@ -33,7 +33,7 @@ export async function up(knex: Knex): Promise<void> {
         table.string('content').notNullable()
         table.timestamp('created').defaultTo(knex.fn.now())
 
-        table.foreign('sender').references('id').inTable('users').onDelete('CASCADE')
+        table.foreign('userId').references('id').inTable('users').onDelete('CASCADE')
         table.foreign('storyId').references('id').inTable('stories').onDelete('CASCADE')
     })
 }

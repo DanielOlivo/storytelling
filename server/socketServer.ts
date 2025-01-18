@@ -1,42 +1,41 @@
 import {Server} from 'socket.io'
 import { createServer } from 'node:http'
 import app from './app'
-import { Comment, CommentEditRequest, CommentPostRequest, CommentRemoveRequest } from '../shared/src/Types'
+import { 
+    Comment, 
+    CommentEditRequest, 
+    CommentPostRequest, 
+    CommentRemoveRequest,
+    CommentEdited,
+    CommentPosted,
+    CommentRemoved,
+    AuthPayload,
+} from '../shared/src/Types'
+import comments from './controllers/comments'
+import { verifyToken } from './middlewares/socketAuth'
 
 export const httpServer = createServer(app)
 const io = new Server(httpServer)
 
+io.use(verifyToken)
+
 io.on('connection', (socket) => {
 
-    socket.on('comment_post', (req: CommentPostRequest) => {
-        console.log('...posting...')
-
-        const res: Comment = {
-            id: 1,
-            storyId: req.storyId,
-            userId: req.userId,
-            content: req.content,
-            created: new Date()
-        }
-
-        io.emit('comment', res)
+    socket.on('comment_post', async (req: CommentPostRequest) => {
+        const res = await comments.create(socket.data, req)
+        io.emit('comment_posted', res)
     }) 
 
-    socket.on('comment_edit', (req: CommentEditRequest) => {
-
+    socket.on('comment_edit', async (req: CommentEditRequest) => {
+        const res = await comments.edit(socket.data, req)
+        io.emit('comment_edited', res)
     })
 
-    socket.on('comment_delete', (req: CommentRemoveRequest) => {
-
+    socket.on('comment_remove', async (req: CommentRemoveRequest) => {
+        const res = await comments.remove(socket.data, req)
+        io.emit('comment_removed', res)
     })
 
-
-
-    socket.on('msg', () => {
-        console.log('triggered msg')
-    })
 })
-
-// httpServer.listen(process.env.PORT || 3000)
 
 export default io
