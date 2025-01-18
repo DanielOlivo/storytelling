@@ -5,7 +5,7 @@ export type StoryId = number
 
 export type ContributorId = number
 
-export type CommentId = string
+export type CommentId = number
 
 export interface User {
     id: UserId
@@ -94,6 +94,67 @@ export interface Comment {
     created: Date
     edited?: Date
 }
+
+
+// socket io types
+
+// comments
+export interface CommentPostRequest {
+    userId: UserId
+    storyId: StoryId
+    content: string
+}
+
+export interface CommentPosted {
+    posted: Comment
+}
+
+export interface CommentEditRequest {
+    id: CommentId
+    content: string
+}
+
+export interface CommentEdited {
+    edited: Comment
+}
+
+export interface CommentRemoveRequest {
+    id: CommentId
+}
+
+export interface CommentRemoved {
+    id: CommentId
+}
+
+// stories
+export interface StoryPostRequest {
+    title: string
+    content: string
+}
+
+export interface StoryPosted {
+    posted: Story
+}
+
+export interface StoryEditRequest {
+    id: StoryId
+    title: string
+    content: string
+}
+
+export interface StoryEdited {
+    edited: Story
+}
+
+export interface StoryRemoveRequest {
+    id: StoryId
+}
+
+export interface StoryRemoved {
+    removed: StoryId
+}
+
+
 
 /**
 CREATE TABLE Users (
